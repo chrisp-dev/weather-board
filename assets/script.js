@@ -4,8 +4,6 @@ $(document).ready(function () {
 
     const API_URL = 'https://api.openweathermap.org/data/2.5/weather?appid=c36ac4ee2ac54475c59bef266d011a17&q=';
     let searchResults = JSON.parse(localStorage.getItem('cache')) || {};
-    console.log("TCL: searchResults", searchResults)
-
 
     let container = $('<div class=container>');
     let row = $('<div class=row>');
@@ -53,7 +51,7 @@ $(document).ready(function () {
     }
 
     function renderCities() {
-        let cities = ['Atlanta', 'Baltimore', 'Chicago', 'Minneapolis', 'New York'];
+        let cities = ['Atlanta', 'Baltimore', 'Chicago', 'Minneapolis', 'New York', 'Seattle', 'Shanghai'];
         let ul = $("<ul>");
 
         cities.forEach(city => {
@@ -96,7 +94,7 @@ $(document).ready(function () {
                     break;
 
                 default:
-                    li.text(`Air Pressure: ${data.main.pressure}`);
+                    li.text(`Wind: ${data.wind.speed}`);
                     break;
             }
             ul.append(li);
