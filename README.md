@@ -1,6 +1,6 @@
 # Weather Dashboard
 
-I'm not sure what it's supposed to do yet.
+Search a destination and retrieve current weather, 5 day forecast and more!
 
 ## Github Pages URL
 [Weather-Board](https://chrisp-dev.github.io/weather-board)
