@@ -4,9 +4,10 @@ $(document).ready(function () {
 
     const API_URL = 'https://api.openweathermap.org/data/2.5/weather?appid=c36ac4ee2ac54475c59bef266d011a17&';
     const FORECAST_API_URL = 'https://api.openweathermap.org/data/2.5/forecast?appid=c36ac4ee2ac54475c59bef266d011a17&';
+    const API3 = 'https://api.openweathermap.org/data/2.5/uvi?appid=c36ac4ee2ac54475c59bef266d011a17&'
 
     let searchResults = JSON.parse(localStorage.getItem('cache')) || {};
-    let cities = ['Atlanta', 'Baltimore', 'Chicago', 'Minneapolis', 'New York', 'Seattle', 'Shanghai'];
+    let cities = ['Albuquerque', 'Baltimore', 'Chicago', 'Minneapolis', 'New York', 'Seattle', 'Shanghai'];
 
 
     // full width of page
@@ -16,10 +17,10 @@ $(document).ready(function () {
     let row = $('<div class="sm:flex w-full p-3 text-sm">');
 
     // 2/3 of container
-    let col8 = $('<div class="sm:w-1/2 text-xl bg-blue-500">');
+    let col8 = $('<div class="sm:w-2/3 text-xl">');
 
     // 1/3 of container
-    let col4 = $('<div class="sm:w-1/2">');
+    let col4 = $('<div class="">');
 
     // create search input
     let searchInput = $('<input class="border rounded-lg p-2 mb-2" type=text id=search placeholder=City...>');
@@ -30,7 +31,7 @@ $(document).ready(function () {
     col4.append(searchLabel, searchInput);
     $('body').prepend(container);
 
-    let jumbo = $('<div id=resultDisplay class="sm:w-1/2 p-10 text-lg bg-blue-200">');
+    let jumbo = $('<div id=resultDisplay class="p-10 text-lg text-bolder bg-blue-200">');
     jumbo.text("Select a City");
     col8.append(jumbo);
     row.append(col4, col8);
@@ -38,6 +39,8 @@ $(document).ready(function () {
 
     // create timer obj
     var tOut;
+
+    // search event handler on keyup
     searchInput.on('keyup', search)
     let searchTerm;
 
@@ -64,12 +67,29 @@ $(document).ready(function () {
     }
 
     function geet(searchTerm) {
-        $.when($.get(`${API_URL}q=${searchInput.val()}`), $.get(`${FORECAST_API_URL}q=${searchInput.val()}`))
-            .done(responseToQuery);
+        $.when(
+            $.get(`${API_URL}q=${searchInput.val()}`),
+            $.get(`${FORECAST_API_URL}q=${searchInput.val()}`))
+            .done(function (api1, api2) {
+                let lat = api1[0].coord.lat;
+                let lon = api1[0].coord.lon;
+
+                $.get(`${API3}lat=${lat}&lon=${lon}`)
+                    .then(function (data) {
+                        api1[0].uv = data.value;
+
+                        responseToQuery(api1, api2);
+                    });
+
+                // responseToQuery()
+            });
     }
 
     function getByLatLon(searchQuery) {
-        $.when($.get(`${API_URL}${searchQuery}`), $.get(`${FORECAST_API_URL}${searchQuery}`))
+        $.when(
+            $.get(`${API_URL}${searchQuery}`),
+            $.get(`${FORECAST_API_URL}${searchQuery}`),
+            $.get(`${API3}${searchQuery}`))
             .done(responseToQuery);
     }
 
@@ -77,14 +97,13 @@ $(document).ready(function () {
         let allData = [dataCurrent[0], dataForecast[0]];
         searchResults[searchTerm] = allData;
 
-        renderCurrentWeather(allData[0]);
-        renderForecast(allData[1]);
+        renderWeatherData(searchTerm);
 
         localStorage.setItem('cache', JSON.stringify(searchResults));
 
     }
     // creating the clear button i guess
-    let clear = $('<button id=clear class="border border-gray-300 hover:bg-gray-500 hover:text-white rounded-lg w-1/2 p-2">Clear Cache</button>');
+    let clear = $('<button id=clear class="border border-gray-300 hover:bg-gray-500 hover:text-white rounded-lg w-1/3 p-2">Clear Cache</button>');
 
     $(clear).on('click', clearCache);
 
@@ -122,9 +141,6 @@ $(document).ready(function () {
         for (let i = 4; i < 37; i += 8) {
             let div = $('<div class="w-full text-center border border-red-500">');
             div.attr('style', 'background:lightblue;')
-            console.log(data);
-
-            console.log(data.list[i]);
 
             // day - description icon - temp F - humidity
             let day = $('<div class="">');
@@ -147,17 +163,24 @@ $(document).ready(function () {
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(function (loc) {
 
-                console.log(loc);
                 searchTerm = `lat=${loc.coords.latitude}&lon=${loc.coords.longitude}`;
 
                 getByLatLon(searchTerm);
             });
         }
     }
-    window.geo = geo;
+
+    function renderWeatherData(searchTerm) {
+        let data = searchResults[searchTerm];
+
+        renderCurrentWeather(data[0]);
+        renderForecast(data[1]);
+    }
     function renderCurrentWeather(data) {
-        $("#resultDisplay").text(data.name);
-        let ul = $('<ul class="bg-white-50">');
+        $("#resultDisplay").text("");
+        let h1 = $("<h1>");
+        h1.text(data.name);
+        let ul = $('<ul class="bg-white-500">');
         let li1 = $('<li>');
         let li2 = $('<li>');
         let li3 = $('<li>');
@@ -166,12 +189,12 @@ $(document).ready(function () {
 
         li1.text(`Humidity: ${data.main.humidity}%`);
         li2.text(`Weather: ${data.weather[0].main}`);
-        li3.text(`Detail: ${data.weather[0].description}`);
+        li3.text(`UV Index: ${data.uv}`);
         li4.text(`Temperature: ${kToF(data.main.temp)}°F`);
         li5.text(`Wind: ${data.wind.speed}mph`);
 
         ul.append(li1, li2, li3, li4, li5);
-        $("#resultDisplay").append(ul);
+        $("#resultDisplay").append(h1, ul);
     }
 
     function kToF(k) {
