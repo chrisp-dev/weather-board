@@ -14,7 +14,7 @@ $(document).ready(function () {
     let container = $('<div class="p-2 m-auto">');
 
     // full width of container
-    let row = $('<div class="sm:flex w-full p-3 text-sm">');
+    let row = $('<div class="sm:flex w-full p-3">');
 
     // 2/3 of container
     let col8 = $('<div class="sm:w-2/3 text-xl">');
@@ -54,13 +54,10 @@ $(document).ready(function () {
         tOut = setTimeout(function () {
             // repeated search - get from cache
             if (searchResults[searchTerm]) {
-                // just render using the searchResults[searchTerm]
-                console.log('Old request');
                 renderCurrentWeather(searchResults[searchTerm][0]);
                 renderForecast(searchResults[searchTerm][1]);
             } else {
                 // fresh request
-                console.log('New request');
                 geet(searchTerm);
             }
         }, 350)
@@ -80,8 +77,6 @@ $(document).ready(function () {
 
                         responseToQuery(api1, api2);
                     });
-
-                // responseToQuery()
             });
     }
 
@@ -100,9 +95,9 @@ $(document).ready(function () {
         renderWeatherData(searchTerm);
 
         localStorage.setItem('cache', JSON.stringify(searchResults));
-
     }
-    // creating the clear button i guess
+
+    // creating the clear button
     let clear = $('<button id=clear class="border border-gray-300 hover:bg-gray-500 hover:text-white rounded-lg w-1/3 p-2">Clear Cache</button>');
 
     $(clear).on('click', clearCache);
@@ -178,9 +173,9 @@ $(document).ready(function () {
     }
     function renderCurrentWeather(data) {
         $("#resultDisplay").text("");
-        let h1 = $("<h1>");
+        let h1 = $("<h1 class='text-3xl font-bold'>");
         h1.text(data.name);
-        let ul = $('<ul class="bg-white-500">');
+        let ul = $('<ul class="w-full p-4 text-xl font-semibold bg-blue-300">');
         let li1 = $('<li>');
         let li2 = $('<li>');
         let li3 = $('<li>');
